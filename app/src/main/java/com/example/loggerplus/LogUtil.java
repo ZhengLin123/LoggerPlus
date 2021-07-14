@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.loggerpluslib.AndroidLogAdapter;
+import com.example.loggerpluslib.CrashHandler;
 import com.example.loggerpluslib.CsvFormatStrategy;
 import com.example.loggerpluslib.DiskLogAdapter;
 import com.example.loggerpluslib.DiskLogStrategy;
@@ -44,6 +45,10 @@ public class LogUtil {
         Logger.addLogAdapter(new DiskLogAdapter(csvFormat));
 
         LogUtil.D("Logger日志初始化完成，日志文件路径:----%s", logDiskPath);
+
+
+
+        CrashHandler.getInstance().init();
     }
 
 

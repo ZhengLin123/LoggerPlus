@@ -21,9 +21,9 @@ import java.util.Iterator;
  * @Author qinicy
  * @Date 2018/12/6
  **/
-public class UBTCrashManager {
+public class CrashManager {
     public static final String TAG = "UBTCrashManager";
-    private static UBTCrashManager mInstance;
+    private static CrashManager mInstance;
     private boolean isStart;
     private boolean isInited;
     private Thread.UncaughtExceptionHandler mSystemUncaughtHandler;
@@ -32,19 +32,19 @@ public class UBTCrashManager {
 
     private boolean mEnable = true;
 
-    private UBTCrashManager() {
+    private CrashManager() {
     }
 
     private static class SingletonHolder {
-        private final static UBTCrashManager instance = new UBTCrashManager();
+        private final static CrashManager instance = new CrashManager();
     }
 
-    public static UBTCrashManager getInstance() {
-        return UBTCrashManager.SingletonHolder.instance;
+    public static CrashManager getInstance() {
+        return CrashManager.SingletonHolder.instance;
     }
 
 
-    public UBTCrashManager init(Context pContext) {
+    public CrashManager init(Context pContext) {
         if (isInited)
             return this;
         mExceptionFilter = new ArrayList<>();
@@ -56,14 +56,14 @@ public class UBTCrashManager {
     }
 
 
-    public UBTCrashManager addExceptionFilterTag(String pTag) {
+    public CrashManager addExceptionFilterTag(String pTag) {
         if (mExceptionFilter == null)
             mExceptionFilter = new ArrayList<>();
         mExceptionFilter.add(pTag);
         return this;
     }
 
-    public UBTCrashManager addExceptionFilterTag(ArrayList<String> pFilterTagList) {
+    public CrashManager addExceptionFilterTag(ArrayList<String> pFilterTagList) {
         if (mExceptionFilter == null)
             mExceptionFilter = new ArrayList<>();
         if (pFilterTagList == null)
