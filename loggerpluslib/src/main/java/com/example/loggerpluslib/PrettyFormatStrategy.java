@@ -47,10 +47,6 @@ public class PrettyFormatStrategy implements FormatStrategy {
    */
   private static final int CHUNK_SIZE = 4000;
 
-  /**
-   * The minimum stack trace index, starts at this class after two native calls.
-   */
-  private static final int MIN_STACK_OFFSET = 5;
 
   /**
    * Drawing toolbox
@@ -126,38 +122,43 @@ public class PrettyFormatStrategy implements FormatStrategy {
 
   @SuppressWarnings("StringBufferReplaceableByString")
   private void logHeaderContent(int logType, @Nullable String tag, int methodCount) {
-    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+    //打印线程信息
     if (showThreadInfo) {
       logChunk(logType, tag, HORIZONTAL_LINE + " Thread: " + Thread.currentThread().getName());
       logDivider(logType, tag);
     }
-    String level = "";
-
-    int stackOffset = getStackOffset(trace) + methodOffset;
-
-    //corresponding method count with the current stack may exceeds the stack trace. Trims the count
-    if (methodCount + stackOffset > trace.length) {
-      methodCount = trace.length - stackOffset - 1;
+    //打印方法栈
+    if(methodCount > 0){
+      printMethodStack(logType, tag);
     }
+  }
 
-    for (int i = methodCount; i > 0; i--) {
-      int stackIndex = i + stackOffset;
-      if (stackIndex >= trace.length) {
+  /**
+   * 打印从stackDownIndex到stackUpIndex的方法栈
+   */
+  private void printMethodStack(int logType, String tag) {
+    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+    int stackUpIndex = Utils.getStackIndex(trace);
+    int stackDownIndex = stackUpIndex + methodCount - 1;
+    String level = "";
+    for (int i = stackDownIndex; i >= stackUpIndex; i--) {
+      if(i >= trace.length || i < 0){
         continue;
       }
+      StackTraceElement element = trace[i];
       StringBuilder builder = new StringBuilder();
       builder.append(HORIZONTAL_LINE)
-          .append(' ')
-          .append(level)
-          .append(getSimpleClassName(trace[stackIndex].getClassName()))
-          .append(".")
-          .append(trace[stackIndex].getMethodName())
-          .append(" ")
-          .append(" (")
-          .append(trace[stackIndex].getFileName())
-          .append(":")
-          .append(trace[stackIndex].getLineNumber())
-          .append(")");
+              .append(' ')
+              .append(level)
+              .append(getSimpleClassName(element.getClassName()))
+              .append(".")
+              .append(element.getMethodName())
+              .append(" ")
+              .append(" (")
+              .append(element.getFileName())
+              .append(":")
+              .append(element.getLineNumber())
+              .append(")");
       level += "   ";
       logChunk(logType, tag, builder.toString());
     }
@@ -193,25 +194,6 @@ public class PrettyFormatStrategy implements FormatStrategy {
     return name.substring(lastIndex + 1);
   }
 
-  /**
-   * Determines the starting index of the stack trace, after method calls made by this class.
-   *
-   * @param trace the stack trace
-   * @return the stack offset
-   */
-  private int getStackOffset(@NonNull StackTraceElement[] trace) {
-    Utils.checkNotNull(trace);
-
-    for (int i = MIN_STACK_OFFSET; i < trace.length; i++) {
-      StackTraceElement e = trace[i];
-      String name = e.getClassName();
-      if (!name.equals(LoggerPrinter.class.getName()) && !name.equals(Logger.class.getName())) {
-        return --i;
-      }
-    }
-    return -1;
-  }
-
   @Nullable
   private String formatTag(@Nullable String tag) {
     if (!Utils.isEmpty(tag) && !Utils.equals(this.tag, tag)) {
@@ -221,7 +203,7 @@ public class PrettyFormatStrategy implements FormatStrategy {
   }
 
   public static class Builder {
-    int methodCount = 2;
+    int methodCount = 0;
     int methodOffset = 0;
     boolean showThreadInfo = true;
     @Nullable

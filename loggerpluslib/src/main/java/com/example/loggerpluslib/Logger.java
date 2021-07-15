@@ -74,6 +74,9 @@ public final class Logger {
   public static final int ERROR = 6;
   public static final int ASSERT = 7;
 
+
+  public static int layerNum;// Logger外所封装的层数，调用方法栈时需要用
+
   @NonNull
   private static Printer printer = new LoggerPrinter();
 

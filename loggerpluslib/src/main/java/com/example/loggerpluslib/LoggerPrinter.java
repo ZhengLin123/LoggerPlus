@@ -33,6 +33,7 @@ import javax.xml.transform.stream.StreamSource;
 //import static com.orhanobut.logger.Logger.WARN;
 //import static com.orhanobut.logger.Utils.checkNotNull;
 
+
 class LoggerPrinter implements Printer {
 
   /**
@@ -184,19 +185,22 @@ class LoggerPrinter implements Printer {
                                 @Nullable Throwable throwable,
                                 @NonNull String msg,
                                 @Nullable Object... args) {
-    Utils.checkNotNull(msg);
-
-    StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[6];
     //
-    String tag ;
-    if( !TextUtils.isEmpty(customTag) ){
-      tag = "[" + customTag + "]";
-    }else{
-      tag = generateClassInfo(stackTraceElement) + generateMethodInfo(stackTraceElement);
-    }
+    String tag = generateTag(customTag);
     //
     String message = createMessage(msg, args);
+    //
     log(priority, tag, message, throwable);
+  }
+
+  private String generateTag(String customTag) {
+    //
+    if( !TextUtils.isEmpty(customTag) ){
+      return "[" + customTag + "]";
+    }
+    //
+    StackTraceElement stackTraceElement = Utils.getStackTraceElement();
+    return generateClassInfo(stackTraceElement) + generateMethodInfo(stackTraceElement);
   }
 
   private String generateClassInfo(StackTraceElement stackTraceElement) {
@@ -245,11 +249,11 @@ class LoggerPrinter implements Printer {
                                @Nullable String tag,
                                @Nullable String message,
                                @Nullable Throwable throwable) {
-    if (throwable != null && message != null) {
-      message += " : " + Utils.getStackTraceString(throwable);
-    }
-    if (throwable != null && message == null) {
+
+    if(message == null){
       message = Utils.getStackTraceString(throwable);
+    }else if(throwable != null){
+      message = message + " : " + Utils.getStackTraceString(throwable);
     }
     if (Utils.isEmpty(message)) {
       message = "Empty/NULL log message";

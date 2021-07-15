@@ -14,6 +14,13 @@ import java.util.Arrays;
  */
 final class Utils {
 
+  /**
+   * The minimum stack trace index, starts at this class after two native calls.
+   */
+  private static final int MIN_STACK_OFFSET = 2;//
+
+
+
   private Utils() {
     // Hidden constructor.
   }
@@ -148,5 +155,48 @@ final class Utils {
       throw new NullPointerException();
     }
     return obj;
+  }
+
+
+  /**
+   * 获取外部调用打Log时的方法栈
+   * @return
+   */
+  static StackTraceElement getStackTraceElement() {
+    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+    int index = getStackIndex(trace);
+    //防止数组下标越界
+    if(index < 0 || index >= trace.length){
+      index = trace.length - 1;
+    }
+    return trace[index];
+  }
+
+
+  /**
+   * 获取外部调用打Log时的方法栈Index
+   * @param trace
+   * @return
+   */
+  static int getStackIndex(StackTraceElement[] trace) {
+    //
+    Utils.checkNotNull(trace);
+    int index = getIndexFrom(trace,MIN_STACK_OFFSET);
+    return index;
+  }
+
+
+  /**
+   * 从from开始遍历，已Logger为基准找Index
+   */
+  private static int getIndexFrom(StackTraceElement[] trace, int from) {
+    for (int i = from; i < trace.length; i++) {
+      StackTraceElement e = trace[i];
+      String name = e.getClassName();
+      if(name.equals(Logger.class.getName())){
+        return i + Logger.layerNum + 1;
+      }
+    }
+    return 0;
   }
 }

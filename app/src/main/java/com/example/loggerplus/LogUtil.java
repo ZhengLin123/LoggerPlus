@@ -29,6 +29,8 @@ public class LogUtil {
 
     public static void init(Context context){
 
+        Logger.layerNum = 1;
+
         //打日志到Logcat
         FormatStrategy prettyFormat = PrettyFormatStrategy.newBuilder()
                 .showThreadInfo(false)  // (Optional) Whether to show thread info or not. Default true
